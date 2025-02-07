@@ -1,9 +1,7 @@
-package models
-
-import "gorm.io/gorm"
-
 type Class struct {
-	gorm.Model
-	Name      string    `gorm:"unique;not null"`
-	Students  []Student
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	Name      string    `json:"name" validate:"required,min=3,max=50,excludesall=|"`
+	Grade     string    `json:"grade" validate:"required"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

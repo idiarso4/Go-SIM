@@ -1,67 +1,57 @@
 package routes
 
 import (
-	"academic-system/internal/handlers"
-	"academic-system/internal/middleware"
-	"github.com/gin-gonic/gin"
+    "academic-system/internal/handlers"
+    "academic-system/internal/middleware"
+    "github.com/gin-gonic/gin"
 )
 
 func SetupRoutes(r *gin.Engine) {
-	// Public routes
-	public := r.Group("/api")
-	{
-		public.POST("/login", handlers.Login)
-		public.POST("/register", handlers.Register)
-	}
+    // Public routes
+    public := r.Group("/api")
+    {
+        public.POST("/login", handlers.Login)
+        public.POST("/register", handlers.Register)
+    }
 
-	// Protected routes
-	protected := r.Group("/api")
-	protected.Use(middleware.AuthMiddleware())
-	{
-		// Assessment routes
-		assessment := protected.Group("/assessments")
-		{
-			assessment.POST("/", handlers.CreateAssessment)
-			assessment.PUT("/:id", handlers.UpdateAssessment)
-			assessment.GET("/:id", handlers.GetAssessment)
-			assessment.GET("/", handlers.ListAssessments)
-			assessment.POST("/:id/export", handlers.ExportAssessment)
-		}
+    // Protected routes
+    protected := r.Group("/api")
+    protected.Use(middleware.AuthMiddleware())
+    {
+        // Class routes
+        class := protected.Group("/classes")
+        {
+            class.POST("/", middleware.ValidateClass(), handlers.CreateClass)
+            class.PUT("/:id", middleware.ValidateClass(), handlers.UpdateClass)
+            class.DELETE("/:id", handlers.DeleteClass)
+            class.GET("/:id", handlers.GetClass)
+            class.GET("/", handlers.ListClasses)
+        }
 
-		// Class routes
-		class := protected.Group("/classes")
-		{
-			class.GET("/", handlers.ListClasses)
-			class.GET("/:id/students", handlers.GetClassStudents)
-		}
+        // Package routes
+        package_ := protected.Group("/packages")
+        {
+            package_.POST("/", middleware.ValidatePackage(), handlers.CreatePackage)
+            package_.PUT("/:id", middleware.ValidatePackage(), handlers.UpdatePackage)
+            package_.DELETE("/:id", handlers.DeletePackage)
+            package_.GET("/:id", handlers.GetPackage)
+            package_.GET("/", handlers.ListPackages)
+        }
 
-		// Student routes
-		student := protected.Group("/students")
-		{
-			student.GET("/", handlers.ListStudents)
-			student.GET("/:id/assessments", handlers.GetStudentAssessments)
-		}
-	}
-}
-func SetupRoutes(r *gin.Engine) {
-	// ... existing routes ...
+        // Student routes
+        student := protected.Group("/students")
+        {
+            student.POST("/", middleware.ValidateStudent(), handlers.CreateStudent)
+            student.PUT("/:id", middleware.ValidateStudent(), handlers.UpdateStudent)
+            student.DELETE("/:id", handlers.DeleteStudent)
+            student.GET("/:id", handlers.GetStudent)
+            student.GET("/", handlers.ListStudents)
+        }
 
-	// Class routes
-	classes := r.Group("/api/classes")
-	{
-		classes.POST("/", middleware.ValidateClass(), handlers.CreateClass)
-		classes.GET("/:id", handlers.GetClass)
-		classes.GET("/", handlers.ListClasses)
-	}
-
-	// Student routes
-	students := r.Group("/api/students")
-	{
-		students.POST("/", middleware.ValidateStudent(), handlers.CreateStudent)
-		students.GET("/:id", handlers.GetStudent)
-		students.GET("/", handlers.ListStudents)
-	}
-
-	// Export route
-	r.GET("/api/export/assessment/:id", handlers.ExportAssessment)
+        // Assessment routes
+        assessment := protected.Group("/assessments")
+        {
+            assessment.POST("/:id/export", handlers.ExportAssessment)
+        }
+    }
 }
